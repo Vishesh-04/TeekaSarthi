@@ -19,9 +19,7 @@ function AddBeneficiarySelection() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       {/* Back Arrow */}
-      {/* <button onClick={() => navigate(-1)} className="mb-4">
-        <img src="https://cdn-icons-png.flaticon.com/512/109/109618.png" alt="Back" className="w-10" />
-      </button> */}
+
 
       {/* Title */}
       <h1 className="text-2xl font-bold justify-center items-center mx-auto flex text-indigo-800 mb-6">Add Beneficiary</h1>
@@ -34,19 +32,19 @@ function AddBeneficiarySelection() {
           </div>
           <span className="mt-2 text-sm font-medium cursor-pointer text-indigo-700">Select Beneficiary</span>
         </div>
-        <div className="flex-1 h-0.5 bg-indigo-400 mx-2"></div>
+        <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
         <div className="flex flex-col items-center">
-          <div className="bg-gray-300 text-white p-2 rounded-full">
+          <div className="bg-indigo-600 text-white p-2 rounded-full">
             <i className="fas fa-home"></i>
           </div>
-          <span className=" cursor-pointer mt-2 text-sm">Locate Anganwadi Center</span>
+          <span className=" cursor-pointer mt-2 text-indigo-700 text-sm font-medium">Locate Anganwadi Center</span>
         </div>
         <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
         <div className="flex flex-col items-center">
-          <div className="bg-gray-300 text-white p-2 rounded-full">
+          <div className="bg-indigo-600 text-white p-2 rounded-full">
             <i className="fas fa-info"></i>
           </div>
-          <span className="mt-2 text-sm">Personal Information</span>
+          <span className="mt-2 text-indigo-700 text-sm font-medium">Personal Information</span>
         </div>
       </div>
 
