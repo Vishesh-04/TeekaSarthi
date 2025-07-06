@@ -61,7 +61,7 @@ const DashboardHome = () => {
   };
 
   return (
-    <div className="flex-1 p-6 bg-gray-100 min-h-screen">
+    <div className="flex-1 p-9 bg-gray-100 min-h-screen">
      
       {/* Welcome Section */}
       {currentTab === "dashboard" && (
@@ -139,6 +139,105 @@ const DashboardHome = () => {
           </form>
         </div>
       )}
+
+
+
+<section className="py-30">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="text-center mb-12">
+      <h2 className="text-3xl font-extrabold text-gray-900">Key Features</h2>
+      <p className="mt-4 text-lg text-gray-600">
+        Empowering Anganwadi workers with essential tools for child health and vaccination management.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {[
+        {
+          icon: (
+            <svg
+              className="w-12 h-12 text-blue-500 mb-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+            </svg>
+          ),
+          title: "Vaccination Tracking",
+          description:
+            "Monitor and manage vaccination schedules and reminders efficiently within Anganwadi centers.",
+        },
+        {
+          icon: (
+            <svg
+              className="w-12 h-12 text-green-500 mb-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="6" cy="6" r="3"></circle>
+              <circle cx="6" cy="18" r="3"></circle>
+              <path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"></path>
+            </svg>
+          ),
+          title: "Nutrition Monitoring",
+          description:
+            "Track nutritional status and growth metrics of registered children for holistic health monitoring.",
+        },
+        {
+          icon: (
+            <svg
+              className="w-12 h-12 text-purple-500 mb-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          ),
+          title: "Parent Engagement",
+          description:
+            "Send SMS reminders and health updates to parents, ensuring proactive participation in child health care.",
+        },
+      ].map((item, index) => (
+        <div
+          key={index}
+          className="bg-gray-50 rounded-lg shadow hover:shadow-md p-6 text-center transition duration-300"
+        >
+          <div className="flex justify-center">{item.icon}</div>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">{item.title}</h3>
+          <p className="text-gray-600 mb-4">{item.description}</p>
+          <button
+            className=" bg-indigo-600 hover:bg-indigo-700 mt-auto text-sm font-medium text-white hover:text-indigo-800 transition border-2 p-3 m-2 rounded-2xl"
+            onClick={() => navigate("/add-beneficiary")}
+          >
+            Learn More &rarr;
+          </button>
+        </div>
+      ))}
+    </div>
+
+    <div className="flex justify-center mt-12">
+      <button
+        className="bg-indigo-600 hover:bg-indigo-700 cursor-pointer text-white font-semibold py-3 px-6 rounded-lg shadow transition"
+        onClick={() => navigate("/add-beneficiary")}
+      >
+        Register a New Beneficiary
+      </button>
+    </div>
+  </div>
+</section>
 
       {/* Schedule Component */}
       {beneficiaryId && (
