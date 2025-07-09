@@ -25,12 +25,13 @@ public class AuthService {
         User user = User.builder()
                 .phone(request.getPhone())
                 .name(request.getName())
+                .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .verified(false)
                 .build();
 
         userRepository.save(user);
-        otpUtil.generateOtp(request.getPhone());
+        otpUtil.generateOtp(request.getPhone(), request.getEmail());
     }
 
     public void verifyRegistrationOtp(OtpRequest otpRequest) {
@@ -54,7 +55,7 @@ public class AuthService {
             throw new RuntimeException("Name doesn't match");
         }
 
-        otpUtil.generateOtp(request.getPhone());
+        otpUtil.generateOtp(request.getPhone(), request.getEmail());
     }
 
     public AuthResponse verifyLoginOtp(OtpRequest request) {

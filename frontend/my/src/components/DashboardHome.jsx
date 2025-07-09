@@ -19,6 +19,7 @@ const DashboardHome = () => {
     address: "",
     city: "",
     pincode: "",
+    email: "",
   });
 
   const [beneficiaryId, setBeneficiaryId] = useState(null);
@@ -53,6 +54,7 @@ const DashboardHome = () => {
         address: "",
         city: "",
         pincode: "",
+        email: "",
       });
     } catch (error) {
       console.error("Error registering beneficiary:", error);
@@ -100,6 +102,7 @@ const DashboardHome = () => {
               ["address", "Address", "text"],
               ["city", "City", "text"],
               ["pincode", "Pincode", "text"],
+              ["email", "Email", "email"],
             ].map(([name, label, type]) => (
               <div key={name}>
                 <label className="block text-sm font-medium mb-1">{label}</label>

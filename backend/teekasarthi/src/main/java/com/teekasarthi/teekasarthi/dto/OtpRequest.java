@@ -12,4 +12,5 @@ import lombok.Setter;
 public class OtpRequest {
     private String phone;
     private String otp;
+    private String email;
 }

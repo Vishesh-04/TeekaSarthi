@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 function AuthPage() {
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [otp, setOtp] = useState("");
@@ -28,6 +29,7 @@ function AuthPage() {
       const response = await axios.post("/api/auth/register", {
         name,
         phone: phoneNumber,
+        email,
         password,
       });
       alert(response.data); // "OTP sent to phone"
@@ -72,6 +74,7 @@ function AuthPage() {
       const response = await axios.post("/api/auth/login", {
         name,
         phone: phoneNumber,
+        email,
       });
       alert(response.data); // "OTP sent for login"
       setIsOtpSent(true);
@@ -126,7 +129,9 @@ function AuthPage() {
               setOtp("");
             }}
             className={`w-1/2 py-2 font-semibold rounded-r ${
-              !isLogin ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"
+              !isLogin
+                ? "bg-indigo-600 text-white"
+                : "bg-gray-200 text-gray-700"
             }`}
           >
             Register
@@ -153,6 +158,14 @@ function AuthPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
 
@@ -203,6 +216,14 @@ function AuthPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
             <input

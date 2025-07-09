@@ -1,5 +1,7 @@
 package com.teekasarthi.teekasarthi.util;
 
+import com.teekasarthi.teekasarthi.service.NotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -10,10 +12,14 @@ public class OtpUtil {
     private final Map<String, String> otpMap = new java.util.HashMap<>();
     private final Random random = new Random();
 
-    public String generateOtp(String phone) {
+    @Autowired
+    NotificationService notificationService;
+
+    public String generateOtp(String phone, String email) {
         String otp = String.valueOf(100000 + random.nextInt(900000));
         otpMap.put(phone, otp);
         System.out.println("Generated OTP for " + phone + ": " + otp);
+        notificationService.sendOtp(email, otp);
         return otp;
     }
 
