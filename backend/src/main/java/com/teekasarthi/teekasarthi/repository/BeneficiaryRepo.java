@@ -15,4 +15,6 @@ import java.util.Optional;
 @Repository
 public interface BeneficiaryRepo extends JpaRepository<Beneficiary, Long> {
     Optional<Beneficiary> findByPhoneNo(String phoneNo);
+    List<Beneficiary> findByStatus(String status);
+    Optional<Beneficiary> findById(Long id);
 }

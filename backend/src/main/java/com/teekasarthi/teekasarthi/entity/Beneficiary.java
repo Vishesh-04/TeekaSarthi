@@ -30,7 +30,12 @@ public class Beneficiary {
     private String city;
     private int pincode;
 
+    private String status; // PENDING_VERIFICATION / ACTIVE
 
+    @Column(nullable = false)
+    private boolean verified = false;
+    // Default to false
+    private String verifiedBy;
     // Optional: Center info (autofilled from frontend)
     private String centerName;
 
@@ -40,5 +45,6 @@ public class Beneficiary {
     // Optional: Image as BLOB (store padhar photo)
     @Column(name = "photo", length = 1000)
     private String photo;
+
 
 }

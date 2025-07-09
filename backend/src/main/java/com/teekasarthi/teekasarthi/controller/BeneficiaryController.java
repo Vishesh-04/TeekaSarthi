@@ -31,7 +31,7 @@ public class BeneficiaryController {
     public ResponseEntity<Beneficiary> addBeneficiary(
             @RequestParam("membertype") String membertype,
             @RequestParam("name") String name,
-            @RequestParam("guardian_name") String guardian_name,
+            @RequestParam("guardianName") String guardian_name,
             @RequestParam("dob") String dob,
             @RequestParam("gender") String gender,
             @RequestParam("idproof") String idproof,
@@ -40,6 +40,7 @@ public class BeneficiaryController {
             @RequestParam("phoneNo") String phoneNo,
             @RequestParam("address") String address,
             @RequestParam("city") String city,
+            @RequestParam("centerName") String centerName,
             @RequestParam("pincode") String pincode,
             @RequestParam(value = "photo", required = false) MultipartFile photo
     ) {
@@ -56,6 +57,7 @@ public class BeneficiaryController {
             beneficiary.setPhoneNo(phoneNo);
             beneficiary.setAddress(address);
             beneficiary.setCity(city);
+            beneficiary.setCenterName(centerName);
             beneficiary.setPincode(Integer.parseInt(pincode));
 
             if (photo != null && !photo.isEmpty()) {
@@ -70,6 +72,13 @@ public class BeneficiaryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Beneficiary> getBeneficiaryById(@PathVariable Long id) {
+        Beneficiary beneficiary = beneficiaryService.getBeneficiaryById(id);
+        return beneficiary != null ? new ResponseEntity<>(beneficiary, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
 
 
 }
