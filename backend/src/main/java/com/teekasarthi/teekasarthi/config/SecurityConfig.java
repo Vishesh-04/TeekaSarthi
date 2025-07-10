@@ -40,7 +40,8 @@ public class SecurityConfig {
                                 "/api/auth/verify-login",
                                 "/api/beneficiaries/**",   // ✅ allow all beneficiary routes
                                 "/hello/test",
-                                "api/schedules/beneficiary/**"
+                                "api/schedules/beneficiary/**",
+                                "api/worker/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

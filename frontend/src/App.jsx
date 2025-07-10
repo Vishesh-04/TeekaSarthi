@@ -11,7 +11,7 @@ import Footer from "./components/Footer";
 import Navbar from './components/Navbar';
 
 // import WorkerLogin from './pages/workers/WorkerLogin';
-// import WorkerDashboard from './pages/workers/Workerdashboard'; 
+import WorkerDashboard from './pages/workers/Workerdashboard'; 
 // import PendingBeneficiaries from './pages/workers/PendingBeneficiaries';
 // import VaccinationEntry from './pages/workers/VaccinationEntry';
 import LocateAnganwadiCenter from './pages/LocateAnganwadiCenter';
@@ -25,24 +25,24 @@ function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
 
-      <Route 
-        path="/login" 
+      <Route
+        path="/login"
         element={
           <>
             <AuthPage />
             <Header />
           </>
-        } 
+        }
       />
 
-      <Route 
-        path="/register" 
+      <Route
+        path="/register"
         element={
           <>
             <AuthPage />
             <Header />
           </>
-        } 
+        }
       />
 
       {/* <Route 
@@ -56,15 +56,6 @@ function App() {
       /> */}
 
       {/* <Route 
-        path="/worker/dashboard" 
-        element={
-          <>
-            <WorkerDashboard />
-            <Header />
-          </>
-        } 
-      />
-      <Route 
         path="/worker/pending-beneficiaries" 
         element={
           <>
@@ -73,59 +64,65 @@ function App() {
           </>
         } 
       /> */}
-
-      <Route 
-        path="/add-beneficiary" 
+      {<Route
+        path="/worker/dashboard"
         element={
           <>
-        <Nav/>
-           <AddBeneficiarySelection />
+            <WorkerDashboard />
             <Header />
           </>
-        } 
+        }
+      />}
+
+      <Route
+        path="/add-beneficiary"
+        element={
+          <>
+            <Nav />
+            <AddBeneficiarySelection />
+            <Header />
+          </>
+        }
       />
-      
-<Route 
-path="/locate-center"
-element={
-  <>
-<Nav/>
-<LocateAnganwadiCenter />
-<Header/>
-</>
 
-} 
-
-/>
-<Route
- path="/beneficiary-info"
- element={
-  <>
-  <Nav/>
- <PersonalInformationForm />
- <Header/>
- </>
- 
- } 
- />
+      <Route
+        path="/locate-center"
+        element={
+          <>
+            <Nav />
+            <LocateAnganwadiCenter />
+            <Header />
+          </>
+        }
+      />
+      <Route
+        path="/beneficiary-info"
+        element={
+          <>
+            <Nav />
+            <PersonalInformationForm />
+            <Header />
+          </>
+        }
+      />
 
       {/* <Route path="/worker/vaccination-entry" element={<VaccinationEntry />} /> */}
 
-      <Route 
-        path="/forgot-password" 
+      <Route
+        path="/forgot-password"
         element={
           <>
             <ForgotPassword />
             <Header />
           </>
-        } 
+        }
       />
 
       <Route
         path="/dashboard"
         element={
           <>
-            <Navbar/>
+            <Navbar />
             <DashboardHome />
             <Header />
           </>
@@ -136,7 +133,7 @@ element={
         path="/dashboard/register"
         element={
           <>
-            <Navbar/>
+            <Navbar />
             <DashboardHome />
             <Header />
           </>

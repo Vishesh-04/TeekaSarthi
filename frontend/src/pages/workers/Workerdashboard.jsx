@@ -74,7 +74,9 @@ const WorkerDashboard = () => {
 
   const fetchPendingApprovals = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/beneficiary/pending");
+      const response = await fetch(
+        "http://localhost:8080/api/worker/pending-beneficiaries"
+      );
       if (response.ok) {
         const data = await response.json();
         setPendingApprovals(data);
@@ -86,6 +88,7 @@ const WorkerDashboard = () => {
       showNotification("Error fetching beneficiaries", "error");
     }
   };
+  
 
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
@@ -222,7 +225,6 @@ const handleApproval = (beneficiaryId, action) => {
             </div>
             <div className="space-y-2 mb-6">
               <p className="text-gray-700"><span className="font-bold text-lg">{pendingApprovals.length}</span> Pending Requests</p>
-              <p className="text-gray-700"><span className="font-bold text-lg">12</span> Approved Today</p>
             </div>
             <div className="space-y-3">
               <button

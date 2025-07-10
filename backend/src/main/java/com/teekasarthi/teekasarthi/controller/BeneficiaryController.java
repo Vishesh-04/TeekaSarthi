@@ -59,6 +59,7 @@ public class BeneficiaryController {
             beneficiary.setCity(city);
             beneficiary.setCenterName(centerName);
             beneficiary.setPincode(Integer.parseInt(pincode));
+            beneficiary.setStatus("PENDING");
 
             if (photo != null && !photo.isEmpty()) {
                 String imageUrl = imageUploadService.uploadImage(photo);
