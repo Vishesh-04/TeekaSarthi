@@ -1,9 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import BeneficiaryCard from '../components/BeneficiaryCard'
+
 
 
 function PersonalInformationForm() {
+  
+useEffect(() => {
+  const storedBeneficiaryType = localStorage.getItem("selectedBeneficiaryType");
+  if (storedBeneficiaryType) {
+    setFormData((prev) => ({
+      ...prev,
+      membertype: storedBeneficiaryType
+    }));
+    // localStorage.removeItem("selectedBeneficiaryType"); // Optional cleanup
+  }
+}, []);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -102,47 +116,77 @@ function PersonalInformationForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { name: "membertype", placeholder: "Beneficiary Type" },
-              { name: "name", placeholder: "Full Name" },
-              { name: "guardianName", placeholder: "Guardian's Name" },
-              { name: "dob", placeholder: "Date of Birth", type: "date" },
-              { name: "idproof", placeholder: "ID Proof Type (Aadhar, etc.)" },
-              { name: "idnumber", placeholder: "ID Proof Number" },
-              { name: "phoneNo", placeholder: "Phone Number" },
-              { name: "address", placeholder: "Address" },
-              { name: "city", placeholder: "City" },
-              { name: "pincode", placeholder: "Pincode" },
-              { name: "centerName", placeholder: "Center Name" },
-              { name: "email", placeholder: "Email" },
-            ].map((field) => (
-              <input
-                key={field.name}
-                type={field.type || "text"}
-                name={field.name}
-                placeholder={field.placeholder}
-                value={formData[field.name]}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm placeholder-gray-500"
-              />
-            ))}
+  {[
+    { name: "membertype", placeholder: "Beneficiary Type" },
+    { name: "name", placeholder: "Full Name" },
+    { name: "guardianName", placeholder: "Guardian's Name" },
+    { name: "dob", placeholder: "Date of Birth", type: "date" },
+    // { name: "idproof", placeholder: "ID Proof Type (Aadhar, etc.)" }, // removed
+  ].map((field) => (
+    <input
+      key={field.name}
+      type={field.type || "text"}
+      name={field.name}
+      placeholder={field.placeholder}
+      value={formData[field.name]}
+      onChange={handleChange}
+      required
+      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm placeholder-gray-500"
+    />
+  ))}
 
-            {/* Gender Dropdown */}
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm"
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Pregnant">Pregnant</option>
-              <option value="0-3 years child">0-3 years child</option>
-              <option value="3-6 years child">3-6 years child</option>
-            </select>
+  {/* ID Proof Dropdown inserted here before ID Number */}
+  <select
+    name="idproof"
+    value={formData.idproof}
+    onChange={handleChange}
+    required
+    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm"
+    
+  >
+    
+    <option value="">Select ID Proof</option>
+    <option value="Aadhar Card">Aadhar Card</option>
+    <option value="PAN Card">PAN Card</option>
+  </select>
+
+  {/* Now continue the rest of the fields */}
+  {[
+    { name: "idnumber", placeholder: "AadharNo or PanNo" },
+    { name: "phoneNo", placeholder: "Phone Number" },
+    { name: "address", placeholder: "Address" },
+    { name: "city", placeholder: "City" },
+    { name: "pincode", placeholder: "Pincode" },
+    { name: "centerName", placeholder: "Center Name" },
+    { name: "email", placeholder: "Email" },
+  ].map((field) => (
+    <input
+      key={field.name}
+      type={field.type || "text"}
+      name={field.name}
+      placeholder={field.placeholder}
+      value={formData[field.name]}
+      onChange={handleChange}
+      required
+      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm placeholder-gray-500"
+    />
+  ))}
+
+  {/* Gender Dropdown */}
+  <select
+    name="gender"
+    value={formData.gender}
+    onChange={handleChange}
+    required
+    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm"
+  >
+    <option value="">Select Gender</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Pregnant">Pregnant</option>
+    <option value="0-3 years child">0-3 years child</option>
+    <option value="3-6 years child">3-6 years child</option>
+  </select>
 
             {/* Photo Upload */}
             <div className="md:col-span-2">
