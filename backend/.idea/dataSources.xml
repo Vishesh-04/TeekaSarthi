@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="defaultdb@immuno-track-krishi-sarthi-backend.j.aivencloud.com [2]" uuid="c1ab6a9b-5252-4896-af0b-ecd8f0ea93e0">
+    <data-source source="LOCAL" name="defaultdb@immuno-track-krishi-sarthi-backend.j.aivencloud.com" uuid="f2d3060d-2929-482d-a813-70af982d8e55">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
