@@ -43,6 +43,15 @@ const WorkerDashboard = () => {
   const [stockData, setStockData] = useState([]);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [currentTime, setCurrentTime] = useState(new Date());
+  // Add these new state variables here:
+  const [scheduleBeneficiaries, setScheduleBeneficiaries] = useState([]);
+  const [currentBeneficiaryIndex, setCurrentBeneficiaryIndex] = useState(0);
+  const [attendanceData, setAttendanceData] = useState({
+    vaccineType: '',
+    dateGiven: new Date().toISOString().split('T')[0],
+    workerLat: 0,
+    workerLng: 0
+  });
 
   const scheduleData = [
     { id: 1, date: 'Today - 2:00 PM', location: 'Community Center A', patients: 15, address: '123 Community St', type: 'General Vaccination', status: 'upcoming', priority: 'high' },
@@ -68,7 +77,7 @@ const WorkerDashboard = () => {
     fetchPendingApprovals();
     setStockData(initialStockData);
     getCurrentLocation();
-    
+
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -76,11 +85,19 @@ const WorkerDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Replace the entire getCurrentLocation function with:
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`);
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+          setAttendanceData(prev => ({
+            ...prev,
+            workerLat: lat,
+            workerLng: lng
+          }));
         },
         () => {
           setLocation('Location access denied');
@@ -89,11 +106,27 @@ const WorkerDashboard = () => {
     } else {
       setLocation('Geolocation not supported');
     }
+    };
+    // Add this new function:
+  const fetchScheduleBeneficiaries = async (scheduleId) => {
+    try {
+      // Mock data - replace with actual API call
+      const mockBeneficiaries = [
+        { id: 1, name: 'John Doe', age: 45, phone: '9876543210' },
+        { id: 2, name: 'Jane Smith', age: 32, phone: '9876543211' },
+        { id: 3, name: 'Bob Johnson', age: 58, phone: '9876543212' },
+      ];
+      setScheduleBeneficiaries(mockBeneficiaries);
+      setCurrentBeneficiaryIndex(0);
+    } catch (error) {
+      console.error('Error fetching beneficiaries:', error);
+      showNotification('Error fetching beneficiaries', 'error');
+    }
   };
 
   const fetchPendingApprovals = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/beneficiary/pending");
+      const response = await fetch("http://localhost:8080/api/beneficiaries/pending");
       if (response.ok) {
         const data = await response.json();
         setPendingApprovals(data);
@@ -161,15 +194,61 @@ const WorkerDashboard = () => {
     }
   };
 
-  const submitAttendance = () => {
+  // Replace the entire submitAttendance function with:
+  const submitAttendance = async () => {
     if (!uploadedPhoto) {
       showNotification('Please upload a photo first!', 'error');
       return;
     }
-    showNotification('Attendance submitted successfully!');
-    setShowAttendanceModal(false);
-    setUploadedPhoto(null);
-    setSelectedSchedule(null);
+
+    if (!attendanceData.vaccineType) {
+      showNotification('Please select vaccine type!', 'error');
+      return;
+    }
+
+    try {
+      const currentBeneficiary = scheduleBeneficiaries[currentBeneficiaryIndex];
+      const formData = new FormData();
+      
+      formData.append('beneficiaryId', currentBeneficiary.id.toString());
+      formData.append('vaccineType', attendanceData.vaccineType);
+      formData.append('dateGiven', attendanceData.dateGiven);
+      formData.append('workerLat', attendanceData.workerLat.toString());
+      formData.append('workerLng', attendanceData.workerLng.toString());
+      
+      // Convert base64 to blob for photo upload
+      const response = await fetch(uploadedPhoto.data);
+      const blob = await response.blob();
+      formData.append('photo', blob, uploadedPhoto.name);
+
+      const submitResponse = await fetch('http://localhost:8080/api/worker/submitAttendance', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (submitResponse.ok) {
+        showNotification(`Attendance submitted for ${currentBeneficiary.name}!`);
+        
+        // Move to next beneficiary or close modal
+        if (currentBeneficiaryIndex < scheduleBeneficiaries.length - 1) {
+          setCurrentBeneficiaryIndex(currentBeneficiaryIndex + 1);
+          setUploadedPhoto(null);
+        } else {
+          // All beneficiaries completed
+          showNotification('All beneficiaries completed!');
+          setShowAttendanceModal(false);
+          setSelectedSchedule(null);
+          setUploadedPhoto(null);
+          setCurrentBeneficiaryIndex(0);
+          setScheduleBeneficiaries([]);
+        }
+      } else {
+        showNotification('Failed to submit attendance', 'error');
+      }
+    } catch (error) {
+      console.error('Error submitting attendance:', error);
+      showNotification('Error submitting attendance', 'error');
+    }
   };
 
   const updateStock = (vaccineId, field, value) => {
@@ -368,6 +447,7 @@ const WorkerDashboard = () => {
                     className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                     onClick={() => {
                       setSelectedSchedule(schedule);
+                      fetchScheduleBeneficiaries(schedule.id);
                       setShowAttendanceModal(true);
                     }}
                   >
@@ -584,6 +664,8 @@ const WorkerDashboard = () => {
                   setShowAttendanceModal(false);
                   setSelectedSchedule(null);
                   setUploadedPhoto(null);
+                  setCurrentBeneficiaryIndex(0);
+                  setScheduleBeneficiaries([]);
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
@@ -596,6 +678,65 @@ const WorkerDashboard = () => {
                 <h3 className="font-semibold text-blue-800">{selectedSchedule.location}</h3>
                 <p className="text-blue-600">{selectedSchedule.date}</p>
                 <p className="text-sm text-gray-600">{selectedSchedule.patients} patients</p>
+              </div>
+
+              {/* Progress indicator */}
+              {scheduleBeneficiaries.length > 0 && (
+                <div className="bg-purple-50 rounded-xl p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-purple-700">
+                      Progress: {currentBeneficiaryIndex + 1} of {scheduleBeneficiaries.length}
+                    </span>
+                    <span className="text-sm text-purple-600">
+                      {Math.round(((currentBeneficiaryIndex + 1) / scheduleBeneficiaries.length) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-purple-200 rounded-full h-2">
+                    <div 
+                      className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${((currentBeneficiaryIndex + 1) / scheduleBeneficiaries.length) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Current beneficiary info */}
+              {scheduleBeneficiaries.length > 0 && (
+                <div className="bg-green-50 rounded-xl p-4">
+                  <h4 className="font-semibold text-green-800 mb-2">Current Beneficiary</h4>
+                  <div className="space-y-1">
+                    <p className="text-green-700">{scheduleBeneficiaries[currentBeneficiaryIndex]?.name}</p>
+                    <p className="text-sm text-green-600">Age: {scheduleBeneficiaries[currentBeneficiaryIndex]?.age}</p>
+                    <p className="text-sm text-green-600">Phone: {scheduleBeneficiaries[currentBeneficiaryIndex]?.phone}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Vaccine Type Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Vaccine Type</label>
+                <select
+                  value={attendanceData.vaccineType}
+                  onChange={(e) => setAttendanceData(prev => ({ ...prev, vaccineType: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select Vaccine Type</option>
+                  <option value="pfizer">Pfizer-BioNTech</option>
+                  <option value="moderna">Moderna</option>
+                  <option value="johnson">Johnson & Johnson</option>
+                  <option value="astrazeneca">AstraZeneca</option>
+                </select>
+              </div>
+
+              {/* Date Given */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date Given</label>
+                <input
+                  type="date"
+                  value={attendanceData.dateGiven}
+                  onChange={(e) => setAttendanceData(prev => ({ ...prev, dateGiven: e.target.value }))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
 
               <div className="flex items-center gap-3 text-green-600">
@@ -627,10 +768,13 @@ const WorkerDashboard = () => {
 
               <button
                 onClick={submitAttendance}
-                disabled={!uploadedPhoto}
+                disabled={!uploadedPhoto || !attendanceData.vaccineType || scheduleBeneficiaries.length === 0}
                 className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Submit Attendance
+                {currentBeneficiaryIndex < scheduleBeneficiaries.length - 1 
+                  ? `Submit for ${scheduleBeneficiaries[currentBeneficiaryIndex]?.name} & Continue`
+                  : `Submit for ${scheduleBeneficiaries[currentBeneficiaryIndex]?.name} & Complete`
+                }
               </button>
             </div>
           </div>
