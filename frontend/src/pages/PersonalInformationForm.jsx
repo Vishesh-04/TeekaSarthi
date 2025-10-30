@@ -39,6 +39,17 @@ useEffect(() => {
 
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [photoPreview, setPhotoPreview] = useState(null);
+   useEffect(() => {
+    const savedType = localStorage.getItem("selectedBeneficiaryType");
+    const storedCenter = JSON.parse(localStorage.getItem("selectedCenter"));
+
+    setFormData((prev) => ({
+      ...prev,
+      membertype: savedType || "",
+      centerName: storedCenter?.name || "",
+    }));
+  }, []);
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -113,16 +124,57 @@ useEffect(() => {
         <h1 className="text-3xl md:text-4xl font-extrabold text-center text-indigo-700 mb-8">
           Register a Beneficiary
         </h1>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+  <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  {[
-    { name: "membertype", placeholder: "Beneficiary Type" },
-    { name: "name", placeholder: "Full Name" },
-    { name: "guardianName", placeholder: "Guardian's Name" },
-    { name: "dob", placeholder: "Date of Birth", type: "date" },
-    // { name: "idproof", placeholder: "ID Proof Type (Aadhar, etc.)" }, // removed
-  ].map((field) => (
+            {[
+              { name: "membertype", placeholder: "Beneficiary Type" },
+              { name: "name", placeholder: "Full Name" },
+              { name: "guardianName", placeholder: "Guardian's Name" },
+              { name: "dob", placeholder: "Date of Birth", type: "date" },
+              { name: "idproof", placeholder: "ID Proof Type (Aadhar, etc.)" },
+              { name: "idnumber", placeholder: "ID Proof Number" },
+              { name: "phoneNo", placeholder: "Phone Number" },
+              { name: "address", placeholder: "Address" },
+              { name: "city", placeholder: "City" },
+              { name: "pincode", placeholder: "Pincode" },
+              { name: "centerName", placeholder: "Center Name" },
+              { name: "email", placeholder: "Email" },
+            ].map((field) => {
+  // ✅ Read-only fields
+  if (field.name === "membertype" || field.name === "centerName") {
+    return (
+      <input
+        key={field.name}
+        type="text"
+        name={field.name}
+        placeholder={field.placeholder}
+        value={formData[field.name]}
+        readOnly
+        className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 text-gray-700 cursor-not-allowed"
+      />
+    );
+  }
+
+  // ✅ Dropdown for ID Proof
+  if (field.name === "idproof") {
+    return (
+      <select
+        key={field.name}
+        name={field.name}
+        value={formData[field.name]}
+        onChange={handleChange}
+        required
+        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm"
+      >
+        <option value="">Select ID Proof</option>
+        <option value="Aadhar Card">Aadhar Card</option>
+        <option value="PAN Card">PAN Card</option>
+      </select>
+    );
+  }
+
+  // ✅ Normal input for all other fields
+  return (
     <input
       key={field.name}
       type={field.type || "text"}
@@ -133,44 +185,8 @@ useEffect(() => {
       required
       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm placeholder-gray-500"
     />
-  ))}
-
-  {/* ID Proof Dropdown inserted here before ID Number */}
-  <select
-    name="idproof"
-    value={formData.idproof}
-    onChange={handleChange}
-    required
-    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm"
-    
-  >
-    
-    <option value="">Select ID Proof</option>
-    <option value="Aadhar Card">Aadhar Card</option>
-    <option value="PAN Card">PAN Card</option>
-  </select>
-
-  {/* Now continue the rest of the fields */}
-  {[
-    { name: "idnumber", placeholder: "AadharNo or PanNo" },
-    { name: "phoneNo", placeholder: "Phone Number" },
-    { name: "address", placeholder: "Address" },
-    { name: "city", placeholder: "City" },
-    { name: "pincode", placeholder: "Pincode" },
-    { name: "centerName", placeholder: "Center Name" },
-    { name: "email", placeholder: "Email" },
-  ].map((field) => (
-    <input
-      key={field.name}
-      type={field.type || "text"}
-      name={field.name}
-      placeholder={field.placeholder}
-      value={formData[field.name]}
-      onChange={handleChange}
-      required
-      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-4 focus:ring-indigo-300 bg-white/70 shadow-sm placeholder-gray-500"
-    />
-  ))}
+  );
+})}
 
   {/* Gender Dropdown */}
   <select
