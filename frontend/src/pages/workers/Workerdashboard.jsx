@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+
 import {
   Camera,
   Calendar,
@@ -16,7 +18,7 @@ import {
   Activity,
   Target,
   TrendingUp,
-  Bell,
+
   Settings,
   LogOut,
   Search,
@@ -24,13 +26,20 @@ import {
   Plus,
   Eye,
   Award,
+  Home,
+  Bell,
   Shield,
   Users,
   Briefcase,
   Heart
 } from 'lucide-react';
+import Navbar from '../../components/Navbar';
+
+
+
 
 const WorkerDashboard = () => {
+  const navigate = useNavigate();
   const [pendingApprovals, setPendingApprovals] = useState([]);
   const [selectedBeneficiary, setSelectedBeneficiary] = useState(null);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
@@ -43,15 +52,7 @@ const WorkerDashboard = () => {
   const [stockData, setStockData] = useState([]);
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [currentTime, setCurrentTime] = useState(new Date());
-  // Add these new state variables here:
-  const [scheduleBeneficiaries, setScheduleBeneficiaries] = useState([]);
-  const [currentBeneficiaryIndex, setCurrentBeneficiaryIndex] = useState(0);
-  const [attendanceData, setAttendanceData] = useState({
-    vaccineType: '',
-    dateGiven: new Date().toISOString().split('T')[0],
-    workerLat: 0,
-    workerLng: 0
-  });
+  
 
   const scheduleData = [
     { id: 1, date: 'Today - 2:00 PM', location: 'Community Center A', patients: 15, address: '123 Community St', type: 'General Vaccination', status: 'upcoming', priority: 'high' },
@@ -73,6 +74,15 @@ const WorkerDashboard = () => {
     { label: 'Pending', value: pendingApprovals.length.toString(), change: '-5%', icon: Clock, color: 'from-orange-500 to-red-500' },
   ];
 
+
+  
+
+//  const handleLogout = () => {
+//     localStorage.removeItem("token");
+//     localStorage.removeItem("role");
+//     window.location.replace("/login");
+//   };
+  
   useEffect(() => {
     fetchPendingApprovals();
     setStockData(initialStockData);
@@ -85,48 +95,57 @@ const WorkerDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Replace the entire getCurrentLocation function with:
+  // const getCurrentLocation = () => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         setLocation(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`);
+  //       },
+  //       () => {
+  //         setLocation('Location access denied');
+  //       }
+  //     );
+  //   } else {
+  //     setLocation('Geolocation not supported');
+  //   }
+  // };
+
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-          setAttendanceData(prev => ({
-            ...prev,
-            workerLat: lat,
-            workerLng: lng
-          }));
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+
+          try {
+            // Reverse Geocoding using OpenStreetMap API
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const data = await response.json();
+
+            if (data && data.address) {
+              const { city, state, country } = data.address;
+              setLocation(`${city || state}, ${country}`);
+            } else {
+              setLocation("Location not found");
+            }
+          } catch (error) {
+            setLocation("Error fetching location");
+          }
         },
         () => {
-          setLocation('Location access denied');
+          setLocation("Location access denied");
         }
       );
     } else {
-      setLocation('Geolocation not supported');
-    }
-    };
-    // Add this new function:
-  const fetchScheduleBeneficiaries = async (scheduleId) => {
-    try {
-      // Mock data - replace with actual API call
-      const mockBeneficiaries = [
-        { id: 1, name: 'John Doe', age: 45, phone: '9876543210' },
-        { id: 2, name: 'Jane Smith', age: 32, phone: '9876543211' },
-        { id: 3, name: 'Bob Johnson', age: 58, phone: '9876543212' },
-      ];
-      setScheduleBeneficiaries(mockBeneficiaries);
-      setCurrentBeneficiaryIndex(0);
-    } catch (error) {
-      console.error('Error fetching beneficiaries:', error);
-      showNotification('Error fetching beneficiaries', 'error');
+      setLocation("Geolocation not supported");
     }
   };
 
+
   const fetchPendingApprovals = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/beneficiaries/pending");
+      const response = await fetch("http://localhost:8080/api/beneficiary/pending");
       if (response.ok) {
         const data = await response.json();
         setPendingApprovals(data);
@@ -194,61 +213,15 @@ const WorkerDashboard = () => {
     }
   };
 
-  // Replace the entire submitAttendance function with:
-  const submitAttendance = async () => {
+  const submitAttendance = () => {
     if (!uploadedPhoto) {
       showNotification('Please upload a photo first!', 'error');
       return;
     }
-
-    if (!attendanceData.vaccineType) {
-      showNotification('Please select vaccine type!', 'error');
-      return;
-    }
-
-    try {
-      const currentBeneficiary = scheduleBeneficiaries[currentBeneficiaryIndex];
-      const formData = new FormData();
-      
-      formData.append('beneficiaryId', currentBeneficiary.id.toString());
-      formData.append('vaccineType', attendanceData.vaccineType);
-      formData.append('dateGiven', attendanceData.dateGiven);
-      formData.append('workerLat', attendanceData.workerLat.toString());
-      formData.append('workerLng', attendanceData.workerLng.toString());
-      
-      // Convert base64 to blob for photo upload
-      const response = await fetch(uploadedPhoto.data);
-      const blob = await response.blob();
-      formData.append('photo', blob, uploadedPhoto.name);
-
-      const submitResponse = await fetch('http://localhost:8080/api/worker/submitAttendance', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (submitResponse.ok) {
-        showNotification(`Attendance submitted for ${currentBeneficiary.name}!`);
-        
-        // Move to next beneficiary or close modal
-        if (currentBeneficiaryIndex < scheduleBeneficiaries.length - 1) {
-          setCurrentBeneficiaryIndex(currentBeneficiaryIndex + 1);
-          setUploadedPhoto(null);
-        } else {
-          // All beneficiaries completed
-          showNotification('All beneficiaries completed!');
-          setShowAttendanceModal(false);
-          setSelectedSchedule(null);
-          setUploadedPhoto(null);
-          setCurrentBeneficiaryIndex(0);
-          setScheduleBeneficiaries([]);
-        }
-      } else {
-        showNotification('Failed to submit attendance', 'error');
-      }
-    } catch (error) {
-      console.error('Error submitting attendance:', error);
-      showNotification('Error submitting attendance', 'error');
-    }
+    showNotification('Attendance submitted successfully!');
+    setShowAttendanceModal(false);
+    setUploadedPhoto(null);
+    setSelectedSchedule(null);
   };
 
   const updateStock = (vaccineId, field, value) => {
@@ -267,6 +240,8 @@ const WorkerDashboard = () => {
   const generatePDFReport = () => {
     const reportData = {
       date: new Date().toISOString().split('T')[0],
+      // yaha generate report m ek hi nam jara h kyuki dummy h
+
       worker: 'John Doe',
       workerId: 'HW001',
       stocks: stockData,
@@ -295,17 +270,48 @@ const WorkerDashboard = () => {
     if (stock.current < 100) return { color: 'text-yellow-500', bg: 'bg-yellow-100', label: 'Medium' };
     return { color: 'text-green-500', bg: 'bg-green-100', label: 'Good Stock' };
   };
+ 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+
+
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pt-20">
+
+
+
+         {/* ✅ Navbar */}
+      <nav className="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-lg shadow-md border-b border-gray-200 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-indigo-600 flex items-center gap-2">
+            <Home className="w-6 h-6 text-indigo-500" />
+            Worker Dashboard
+          </h1>
+
+          <div className="flex items-center gap-6 text-gray-700 font-medium">
+            <button
+              onClick={() => setShowApprovalModal(true)}
+              className="flex items-center gap-2 hover:text-indigo-600"
+            >
+              <Bell className="w-5 h-5" /> Approvals
+            </button>
+
+            {/* <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+            >
+              Logout
+            </button> */}
+          </div>
+        </div>
+      </nav>
+
       {/* Notification */}
       {notification.show && (
         <div
-          className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-2xl shadow-2xl border-l-4 ${
-            notification.type === 'error' 
-              ? 'bg-red-50 border-red-500 text-red-800' 
+          className={`fixed top-6 right-6 z-50 px-6 py-4 rounded-2xl shadow-2xl border-l-4 ${notification.type === 'error'
+              ? 'bg-red-50 border-red-500 text-red-800'
               : 'bg-green-50 border-green-500 text-green-800'
-          } transform transition-all duration-300 animate-pulse`}
+            } transform transition-all duration-300 animate-pulse`}
         >
           <div className="flex items-center gap-3">
             {notification.type === 'error' ? (
@@ -320,7 +326,8 @@ const WorkerDashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         {/* Enhanced Header */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 mb-8 shadow-2xl border border-white/20">
+        {/* Enhanced Header */}
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 mb-8 shadow-2xl border border-white/20">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="flex items-center gap-6">
               <div className="relative">
@@ -329,35 +336,38 @@ const WorkerDashboard = () => {
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
               </div>
+
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <h1 className="text-4xl font-bold bg-black bg-clip-text text-transparent mb-2">
                   Worker Dashboard
                 </h1>
-                <p className="text-gray-600 text-lg">Welcome back, John Doe</p>
+                <p className="text-gray-700 text-lg">Welcome back</p>
+
                 <div className="flex items-center gap-4 mt-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2 text-sm text-gray-900">
                     <Clock className="w-4 h-4" />
                     <span>{currentTime.toLocaleTimeString()}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
+
+                  <div className="flex items-center gap-2 text-sm text-gray-900">
                     <MapPin className="w-4 h-4" />
                     <span>{location}</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            {/* <div className="flex items-center gap-4">
               <button className="p-3 bg-indigo-100 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors">
                 <Bell className="w-5 h-5" />
               </button>
               <button className="p-3 bg-indigo-100 text-indigo-600 rounded-xl hover:bg-indigo-200 transition-colors">
                 <Settings className="w-5 h-5" />
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
             <div key={index} className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
@@ -371,7 +381,7 @@ const WorkerDashboard = () => {
               <p className="text-gray-600 text-sm">{stat.label}</p>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -384,12 +394,12 @@ const WorkerDashboard = () => {
                     <Users className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-800">Approvals</h3>
-                    <p className="text-gray-600">Pending verification requests</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Approvals</h3>
+                    <p className="text-gray-900">Pending verification requests</p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-6 mb-8">
                 <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200">
                   <div className="flex items-center gap-3 mb-3">
@@ -401,7 +411,7 @@ const WorkerDashboard = () => {
                   <div className="text-3xl font-bold text-emerald-600 mb-2">{pendingApprovals.length}</div>
                   <p className="text-sm text-emerald-700">Awaiting your review</p>
                 </div>
-                
+
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-200">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -434,12 +444,12 @@ const WorkerDashboard = () => {
                     <Calendar className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-800">Vaccination Schedule</h3>
-                    <p className="text-gray-600">Upcoming appointments & drives</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Vaccination Schedule</h3>
+                    <p className="text-gray-900">Upcoming appointments & drives</p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-4 mb-8">
                 {scheduleData.slice(0, showScheduleExpanded ? scheduleData.length : 3).map((schedule) => (
                   <div
@@ -447,7 +457,6 @@ const WorkerDashboard = () => {
                     className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                     onClick={() => {
                       setSelectedSchedule(schedule);
-                      fetchScheduleBeneficiaries(schedule.id);
                       setShowAttendanceModal(true);
                     }}
                   >
@@ -478,10 +487,10 @@ const WorkerDashboard = () => {
                   </div>
                 ))}
               </div>
-              
+
               <button
                 onClick={() => setShowScheduleExpanded(!showScheduleExpanded)}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-4 px-6 rounded-2xl font-semibold text-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-3"
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 px-6 rounded-2xl font-semibold text-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-3"
               >
                 {showScheduleExpanded ? (
                   <>Show Less <ChevronUp className="w-5 h-5" /></>
@@ -499,12 +508,12 @@ const WorkerDashboard = () => {
                     <Package className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-800">Vaccine Inventory</h3>
-                    <p className="text-gray-600">Current stock levels & status</p>
+                    <h3 className="text-2xl font-bold text-gray-900">Vaccine Inventory</h3>
+                    <p className="text-gray-900">Current stock levels & status</p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 {stockData.map((stock) => {
                   const status = getStockStatus(stock);
@@ -518,18 +527,18 @@ const WorkerDashboard = () => {
                           {status.label}
                         </span>
                       </div>
-                      <div className="text-3xl font-bold text-purple-600 mb-2">{stock.current}</div>
-                      <div className="text-sm font-semibold text-gray-800 mb-1">{stock.name}</div>
-                      <div className="text-xs text-gray-600">Expires: {stock.expiry}</div>
+                      <div className="text-3xl font-bold text-purple-900 mb-2">{stock.current}</div>
+                      <div className="text-sm font-semibold text-gray-900 mb-1">{stock.name}</div>
+                      <div className="text-xs text-gray-900">Expires: {stock.expiry}</div>
                     </div>
                   );
                 })}
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setShowStockModal(true)}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 px-6 rounded-2xl font-semibold text-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-3"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 px-6 rounded-2xl font-semibold text-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex items-center justify-center gap-3"
                 >
                   <Plus className="w-5 h-5" />
                   Update Stock
@@ -560,7 +569,7 @@ const WorkerDashboard = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             {!selectedBeneficiary ? (
               <div className="space-y-4">
                 {pendingApprovals.map((beneficiary) => (
@@ -592,7 +601,7 @@ const WorkerDashboard = () => {
                 >
                   ← Back to List
                 </button>
-                
+
                 <div className="bg-gray-50 rounded-xl p-6">
                   <h3 className="text-xl font-semibold mb-4">Beneficiary Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -664,79 +673,18 @@ const WorkerDashboard = () => {
                   setShowAttendanceModal(false);
                   setSelectedSchedule(null);
                   setUploadedPhoto(null);
-                  setCurrentBeneficiaryIndex(0);
-                  setScheduleBeneficiaries([]);
                 }}
                 className="text-gray-500 hover:text-gray-700"
               >
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="space-y-6">
               <div className="bg-blue-50 rounded-xl p-4">
                 <h3 className="font-semibold text-blue-800">{selectedSchedule.location}</h3>
                 <p className="text-blue-600">{selectedSchedule.date}</p>
                 <p className="text-sm text-gray-600">{selectedSchedule.patients} patients</p>
-              </div>
-
-              {/* Progress indicator */}
-              {scheduleBeneficiaries.length > 0 && (
-                <div className="bg-purple-50 rounded-xl p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-purple-700">
-                      Progress: {currentBeneficiaryIndex + 1} of {scheduleBeneficiaries.length}
-                    </span>
-                    <span className="text-sm text-purple-600">
-                      {Math.round(((currentBeneficiaryIndex + 1) / scheduleBeneficiaries.length) * 100)}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-purple-200 rounded-full h-2">
-                    <div 
-                      className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${((currentBeneficiaryIndex + 1) / scheduleBeneficiaries.length) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Current beneficiary info */}
-              {scheduleBeneficiaries.length > 0 && (
-                <div className="bg-green-50 rounded-xl p-4">
-                  <h4 className="font-semibold text-green-800 mb-2">Current Beneficiary</h4>
-                  <div className="space-y-1">
-                    <p className="text-green-700">{scheduleBeneficiaries[currentBeneficiaryIndex]?.name}</p>
-                    <p className="text-sm text-green-600">Age: {scheduleBeneficiaries[currentBeneficiaryIndex]?.age}</p>
-                    <p className="text-sm text-green-600">Phone: {scheduleBeneficiaries[currentBeneficiaryIndex]?.phone}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Vaccine Type Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Vaccine Type</label>
-                <select
-                  value={attendanceData.vaccineType}
-                  onChange={(e) => setAttendanceData(prev => ({ ...prev, vaccineType: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Vaccine Type</option>
-                  <option value="pfizer">Pfizer-BioNTech</option>
-                  <option value="moderna">Moderna</option>
-                  <option value="johnson">Johnson & Johnson</option>
-                  <option value="astrazeneca">AstraZeneca</option>
-                </select>
-              </div>
-
-              {/* Date Given */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Date Given</label>
-                <input
-                  type="date"
-                  value={attendanceData.dateGiven}
-                  onChange={(e) => setAttendanceData(prev => ({ ...prev, dateGiven: e.target.value }))}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
               </div>
 
               <div className="flex items-center gap-3 text-green-600">
@@ -768,13 +716,10 @@ const WorkerDashboard = () => {
 
               <button
                 onClick={submitAttendance}
-                disabled={!uploadedPhoto || !attendanceData.vaccineType || scheduleBeneficiaries.length === 0}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!uploadedPhoto}
+                className="w-full bg-gradient-to-r from-emerald-800 to-teal-800 text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {currentBeneficiaryIndex < scheduleBeneficiaries.length - 1 
-                  ? `Submit for ${scheduleBeneficiaries[currentBeneficiaryIndex]?.name} & Continue`
-                  : `Submit for ${scheduleBeneficiaries[currentBeneficiaryIndex]?.name} & Complete`
-                }
+                Submit Attendance
               </button>
             </div>
           </div>
@@ -794,7 +739,7 @@ const WorkerDashboard = () => {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="space-y-6">
               {stockData.map((vaccine) => (
                 <div key={vaccine.id} className="border rounded-xl p-6">
